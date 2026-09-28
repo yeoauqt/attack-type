@@ -1,8 +1,9 @@
 """
-pipeline.py  —  Data Engineering Pipeline สำหรับ NSL-KDD
-(ย้ายโค้ดจาก attack_type_nslkdd_DE.ipynb มาเป็นฟังก์ชัน เพื่อให้ Streamlit เรียกใช้ได้)
+pipeline.py  -  Data Engineering pipeline for NSL-KDD
+(Functions refactored from attack_type_nslkdd_DE.ipynb so that they can be called by the Streamlit application.)
 
-หลักการ: ทุกการตัดสินใจ (dedup / constant / correlation / top services) คำนวณจาก train เท่านั้น
+Principle: every data-driven decision (deduplication / constant features / correlation / top services)
+is computed from the training set only, to prevent data leakage.
 """
 from __future__ import annotations
 
@@ -47,13 +48,13 @@ U2R = "buffer_overflow loadmodule perl rootkit ps sqlattack xterm".split()
 
 PIPELINE_STEPS = [
     ("INPUT", "NSL-KDD\nKDDTrain+ / KDDTest+"),
-    ("1 Extraction", "โหลด + ใส่ schema\n(43 คอลัมน์)"),
+    ("1 Extraction", "Load data and apply\nschema (43 columns)"),
     ("2 Quality Check", "Missing / Duplicate\n/ Constant / Skew"),
-    ("3 Cleaning", "ลบ duplicate\nลบ constant"),
-    ("4 Feature Selection", "correlation > 0.95"),
-    ("5 Feature Eng.", "ทดลอง + ablation"),
-    ("6 Preprocessing", "One-hot (+ Scaler\nเฉพาะ LR)"),
-    ("7 Validation", "assert หลังทุกขั้น"),
+    ("3 Cleaning", "Remove duplicates\nand constant features"),
+    ("4 Feature Selection", "Correlation > 0.95"),
+    ("5 Feature Engineering", "Experiment +\nablation study"),
+    ("6 Preprocessing", "One-hot encoding\n(+ scaler for LR only)"),
+    ("7 Validation", "Assertions after\nevery stage"),
     ("OUTPUT", "Clean data → Model\n→ Evaluation"),
 ]
 
@@ -65,7 +66,7 @@ def _download(fname: str, dest: str) -> None:
 
 
 def load_raw(train_src=None, test_src=None):
-    """โหลด train/test  (ลำดับ: ไฟล์ที่อัปโหลด → data/ → ดาวน์โหลดจาก GitHub)"""
+    """Load train/test data (order of precedence: uploaded file -> data/ folder -> download from GitHub)."""
     if train_src is None:
         if not os.path.exists(TRAIN_FILE):
             _download("KDDTrain+.txt", TRAIN_FILE)
@@ -76,8 +77,8 @@ def load_raw(train_src=None, test_src=None):
         test_src = TEST_FILE
     train = pd.read_csv(train_src, names=COLS)
     test = pd.read_csv(test_src, names=COLS)
-    # Validation ของขั้น extraction
-    assert train.shape[1] == test.shape[1] == 43, "จำนวนคอลัมน์ไม่ตรง schema"
+    # Validation of the extraction stage
+    assert train.shape[1] == test.shape[1] == 43, "Column count does not match the expected schema"
     assert list(train.columns) == list(test.columns)
     return train, test
 
@@ -93,7 +94,7 @@ def to_category(l: str) -> str:
         return "R2L"
     if l in U2R:
         return "U2R"
-    raise ValueError(f"label ไม่รู้จัก: {l}")
+    raise ValueError(f"Unknown label: {l}")
 
 
 def add_attack_type(train: pd.DataFrame, test: pd.DataFrame):
@@ -105,13 +106,13 @@ def add_attack_type(train: pd.DataFrame, test: pd.DataFrame):
 
 # ------------------------------------------------------------------ 2) Validation + step log
 def validate(step, Xtr, ytr, Xte, yte, step_log: list):
-    assert Xtr.isna().sum().sum() == 0, f"[{step}] train มี missing"
-    assert Xte.isna().sum().sum() == 0, f"[{step}] test มี missing"
+    assert Xtr.isna().sum().sum() == 0, f"[{step}] training set contains missing values"
+    assert Xte.isna().sum().sum() == 0, f"[{step}] test set contains missing values"
     assert len(Xtr) == len(ytr), f"[{step}] len(X_train) != len(y_train)"
     assert len(Xte) == len(yte), f"[{step}] len(X_test) != len(y_test)"
-    assert list(Xtr.columns) == list(Xte.columns), f"[{step}] schema train/test ไม่ตรงกัน"
-    assert set(CAT).issubset(Xtr.columns), f"[{step}] คอลัมน์ categorical หาย"
-    assert set(ytr.unique()).issubset(LABELS), f"[{step}] y_train มี label แปลก"
+    assert list(Xtr.columns) == list(Xte.columns), f"[{step}] train/test schema mismatch"
+    assert set(CAT).issubset(Xtr.columns), f"[{step}] categorical columns are missing"
+    assert set(ytr.unique()).issubset(LABELS), f"[{step}] y_train contains unexpected labels"
     step_log.append(dict(step=step, train_rows=len(Xtr), test_rows=len(Xte), n_features=Xtr.shape[1]))
 
 
@@ -134,7 +135,7 @@ def add_features(d: pd.DataFrame, top_services: set) -> pd.DataFrame:
 
 # ------------------------------------------------------------------ 4) Run whole DE pipeline
 def run_de(train: pd.DataFrame, test: pd.DataFrame, corr_threshold: float = 0.95) -> dict:
-    """รันทุกขั้นตอน DE แล้วคืนผลลัพธ์ทุกอย่างเป็น dict"""
+    """Run every data engineering stage and return all results as a dict."""
     step_log: list = []
     X_train_raw, y_train = train.drop(columns=DROP), train["Attack Type"]
     X_test_raw, y_test = test.drop(columns=DROP), test["Attack Type"]
@@ -179,19 +180,19 @@ def run_de(train: pd.DataFrame, test: pd.DataFrame, corr_threshold: float = 0.95
     min_class = y_train.value_counts().idxmin()
 
     quality_report = pd.DataFrame([
-        ["Missing value", f"{n_missing}", "ไม่ต้องทำอะไร"],
-        ["Duplicate rows", f"train {n_dup_train} | test {n_dup_test}", "ลบจาก train (เก็บ test ตามต้นฉบับ)"],
-        ["Constant feature", f"{len(const_cols)}: {const_cols}", "ลบ (ไม่มีข้อมูล)"],
-        [f"Highly correlated (>{corr_threshold})", f"{len(corr_drop)}: {corr_drop}", "ลบ (ซ้ำซ้อน)"],
+        ["Missing values", f"{n_missing}", "No action required"],
+        ["Duplicate rows", f"train {n_dup_train} | test {n_dup_test}", "Removed from the training set (test set retained as provided)"],
+        ["Constant feature", f"{len(const_cols)}: {const_cols}", "Removed (no information content)"],
+        [f"Highly correlated (>{corr_threshold})", f"{len(corr_drop)}: {corr_drop}", "Removed (redundant)"],
         ["Categorical feature", f"{len(CAT)}: {CAT}", "One-hot encoding (handle_unknown=ignore)"],
         ["Skewed numeric", f"{', '.join(skew.index[:3])}, ... (skew > {skew.iloc[4]:.0f})",
-         "ทดลอง log-transform ใน feature engineering"],
+         "Log transformation evaluated during feature engineering"],
         ["Class imbalance", f"{min_class}={int(y_train.value_counts().min())} vs "
                             f"Normal={int(y_train.value_counts()['Normal'])}",
-         "class_weight='balanced' + รายงาน Macro F1"],
-        ["Unseen attack in test", f"{len(unseen)} subtypes ({n_unseen_rows} แถว)",
-         "รายงานเป็นข้อจำกัด + error analysis"],
-    ], columns=["Data Quality Check", "Result", "Action"])
+         "class_weight='balanced' + report Macro F1"],
+        ["Unseen attack in test", f"{len(unseen)} subtypes ({n_unseen_rows} rows)",
+         "Reported as a limitation + error analysis"],
+    ], columns=["Data Quality Check", "Finding", "Resolution"])
 
     step_df = pd.DataFrame(step_log).set_index("step")
     step_df["features_change"] = step_df["n_features"].diff().fillna(0).astype(int)
@@ -214,7 +215,7 @@ def run_de(train: pd.DataFrame, test: pd.DataFrame, corr_threshold: float = 0.95
 
 # ------------------------------------------------------------------ 5) Model
 def make_model(X: pd.DataFrame, kind="rf", scale=None, n_est=100) -> Pipeline:
-    """kind: 'dummy' | 'lr' | 'rf'.  scale=None -> lr ใช้ scaler, rf/dummy ไม่ใช้"""
+    """kind: 'dummy' | 'lr' | 'rf'.  scale=None -> scaler is applied to lr only (not to rf/dummy)."""
     if scale is None:
         scale = kind == "lr"
     num = [c for c in X.columns if c not in CAT]
@@ -235,7 +236,7 @@ def make_model(X: pd.DataFrame, kind="rf", scale=None, n_est=100) -> Pipeline:
 def evaluate(name, Xtr, ytr, Xte, yte, kind="rf", scale=None, n_est=100, cv_splits=3) -> dict:
     skf = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=SEED)
     m = make_model(Xtr, kind, scale, n_est)
-    cv = cross_val_score(m, Xtr, ytr, cv=skf, scoring="f1_macro", n_jobs=1).mean()  # เลือกค่าด้วย train
+    cv = cross_val_score(m, Xtr, ytr, cv=skf, scoring="f1_macro", n_jobs=1).mean()  # model selection uses the training set only
     m.fit(Xtr, ytr)
     p = m.predict(Xte)
     rec = recall_score(yte, p, labels=LABELS, average=None, zero_division=0)
