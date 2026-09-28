@@ -1,176 +1,113 @@
-"""Visual theme for the NSL-KDD Data Engineering Dashboard.
+"""CSS theme modelled on the 'Extej Wallet' dashboard (orange-and-white palette, rounded cards, pill-style sidebar menu)."""
 
-Design direction: formal, academic and restrained.
-Deep navy as the primary colour, steel blue as the single accent, hairline
-borders instead of shadows, serif headings paired with a neutral sans body.
-"""
+ORANGE = "#ff8a24"
+NAVY = "#1e2340"
+CLASS_COLORS = {"Normal": "#ff9f43", "DoS": "#5b8def", "Probe": "#14b8a6", "R2L": "#ec4899", "U2R": "#8b5cf6"}
 
-NAVY = "#14284B"
-ACCENT = "#2F5D8A"
-MUTED_BLUE = "#8FA6C4"
-INK = "#1F2937"
-GRID = "#E6E9EF"
-
-# Muted, print-friendly category colours
-CLASS_COLORS = {
-    "Normal": "#2E6F5E",
-    "DoS": "#9E3B3B",
-    "Probe": "#B0822D",
-    "R2L": "#4A5F8F",
-    "U2R": "#6B4C7A",
-}
-
-LOGO_SVG = """
-<svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M16 3 L27 7 V15 C27 21.5 22.5 26.5 16 29 C9.5 26.5 5 21.5 5 15 V7 Z"
-        stroke="#14284B" stroke-width="2" fill="none" stroke-linejoin="round"/>
-  <path d="M10.5 16 H14 L16 11 L18.5 20 L20 16 H21.5" stroke="#2F5D8A" stroke-width="2"
-        fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-"""
-
-CSS = """
+CSS = f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap');
+html, body, [class*="css"], .stApp {{ font-family: 'Poppins','Noto Sans Thai',sans-serif; color:{NAVY}; }}
+.stApp {{
+  background:
+    radial-gradient(circle at 8% 0%, rgba(255,190,150,.35), transparent 32%),
+    radial-gradient(circle at 92% 0%, rgba(150,225,215,.35), transparent 30%),
+    #f6f7fb;
+}}
+#MainMenu, footer {{ visibility:hidden; }}
+header[data-testid="stHeader"] {{ background:transparent; }}
+.block-container {{ padding-top:1rem; padding-bottom:3rem; max-width:1400px; }}
 
-:root {
-  --navy: #14284B;
-  --accent: #2F5D8A;
-  --ink: #1F2937;
-  --muted: #6B7280;
-  --line: #DFE3EA;
-  --bg: #F4F5F8;
-  --card: #FFFFFF;
-  --tint: #EEF2F7;
-}
+/* ---------- Sidebar ---------- */
+section[data-testid="stSidebar"] {{ background:#ffffff; border-right:1px solid #eef0f5; width:270px !important; }}
+section[data-testid="stSidebar"] > div {{ padding-top:.6rem; }}
+.brand {{ display:flex; align-items:center; gap:10px; padding:6px 6px 18px 6px; }}
+.brand .name {{ font-size:26px; font-weight:700; color:{NAVY}; letter-spacing:.3px; }}
+.side-title {{ font-size:11px; letter-spacing:1px; color:#aab0c0; margin:14px 8px 6px; text-transform:uppercase; }}
+section[data-testid="stSidebar"] div[role="radiogroup"] {{ gap:4px; }}
+section[data-testid="stSidebar"] div[role="radiogroup"] label {{
+  width:100%; padding:11px 14px; border-radius:12px; margin:0; cursor:pointer; transition:.15s;
+}}
+section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {{ display:none; }}
+section[data-testid="stSidebar"] div[role="radiogroup"] label p {{ font-size:14.5px; color:#8a90a2; margin:0; font-weight:500; }}
+section[data-testid="stSidebar"] div[role="radiogroup"] label:hover {{ background:#fff4e8; }}
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {{
+  background:linear-gradient(90deg,#ffa54f,{ORANGE}); box-shadow:0 10px 20px rgba(255,138,36,.35);
+}}
+section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {{ color:#fff; font-weight:600; }}
+.side-link {{ display:block; padding:9px 14px; color:#8a90a2; font-size:14px; text-decoration:none; border-radius:10px; }}
+.side-link:hover {{ background:#fff4e8; color:{ORANGE}; }}
 
-html, body, .stApp, [class*="css"] {
-  font-family: 'Inter', 'Noto Sans Thai', -apple-system, 'Segoe UI', sans-serif;
-  color: var(--ink);
-}
-.stApp { background: var(--bg); }
-header[data-testid="stHeader"] { background: transparent; }
-.block-container { padding-top: 1.2rem; padding-bottom: 3rem; max-width: 1280px; }
+/* ---------- Topbar ---------- */
+.topbar {{ display:flex; align-items:center; gap:16px; background:#fff; border-radius:16px; padding:12px 20px;
+  box-shadow:0 6px 24px rgba(30,35,64,.05); margin-bottom:18px; }}
+.topbar .search {{ flex:1; background:#f6f7fb; border-radius:10px; padding:10px 16px; color:#aab0c0; font-size:13px; }}
+.topbar .ico {{ font-size:17px; color:#9aa1b4; }}
+.topbar .avatar {{ width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#ffb35c,#ff7a1a);
+  color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; }}
+.topbar .who b {{ font-size:14px; display:block; line-height:1.1; }}
+.topbar .who span {{ font-size:12px; color:#9aa1b4; }}
+.topbar .toggle {{ width:44px; height:24px; border-radius:20px; background:#eef0f5; position:relative; }}
+.topbar .toggle::after {{ content:''; position:absolute; top:3px; left:23px; width:18px; height:18px; border-radius:50%; background:#ffd166; }}
 
-/* ---------- top bar ---------- */
-.topbar {
-  display: flex; justify-content: space-between; align-items: center;
-  background: var(--navy); color: #E7ECF4; border-radius: 4px;
-  padding: .65rem 1.2rem; font-size: .8rem; letter-spacing: .04em; margin-bottom: 1.6rem;
-}
-.topbar b { color: #fff; font-weight: 600; }
+h1.page-title {{ font-size:28px; font-weight:700; margin:0 0 14px 2px; color:{NAVY}; }}
 
-/* ---------- headings ---------- */
-.eyebrow {
-  font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--accent); font-weight: 600; margin-bottom: .2rem;
-}
-h1.page-title {
-  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  font-weight: 600; color: var(--navy); font-size: 2.1rem; line-height: 1.2;
-  margin: 0 0 .35rem 0; padding: 0;
-}
-p.page-sub { color: var(--muted); font-size: .95rem; margin: 0 0 1.4rem 0; max-width: 62rem; line-height: 1.55; }
-.card-title {
-  font-family: 'Source Serif 4', Georgia, serif; font-size: 1.18rem; font-weight: 600;
-  color: var(--navy); padding-bottom: .55rem; margin-bottom: .9rem; border-bottom: 1px solid var(--line);
-}
-.card-note { color: var(--muted); font-size: .85rem; line-height: 1.5; }
+/* ---------- Cards ( st.container(key="card_*") ) ---------- */
+[class*="st-key-card"] {{
+  background:#fff; border-radius:18px; padding:20px 22px; box-shadow:0 6px 24px rgba(30,35,64,.05);
+  border:1px solid #f0f1f6; margin-bottom:6px;
+}}
+.card-head {{ display:flex; justify-content:space-between; align-items:center; font-size:15px; color:{NAVY}; font-weight:500; }}
+.card-head .sub {{ font-size:12px; color:#8a90a2; }}
+.card-title {{ font-size:19px; font-weight:600; margin-bottom:6px; }}
+.big {{ font-size:28px; font-weight:700; color:{NAVY}; margin:8px 0 2px; }}
+.muted {{ color:#9aa1b4; font-size:12.5px; }}
+.green {{ color:#22b573; font-weight:600; }}
+.red {{ color:#ef4b5b; font-weight:600; }}
+.segbar {{ display:flex; height:3px; border-radius:3px; overflow:hidden; margin:16px 0 8px; }}
+.legend {{ display:flex; gap:16px; font-size:12px; color:#4b5168; flex-wrap:wrap; }}
+.dot {{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; }}
+.row-between {{ display:flex; justify-content:space-between; align-items:baseline; }}
 
-/* ---------- cards (any st.container whose key starts with card_) ---------- */
-[class*="st-key-card_"] {
-  background: var(--card); border: 1px solid var(--line); border-radius: 4px;
-  padding: 1.3rem 1.6rem 1.2rem; margin-bottom: 1rem;
-}
-[class*="st-key-card_"] p, [class*="st-key-card_"] li { line-height: 1.6; }
+/* ---------- Pipeline diagram ---------- */
+.flow {{ display:flex; align-items:stretch; gap:6px; overflow-x:auto; padding:6px 2px 10px; }}
+.flow .box {{ min-width:128px; flex:1; border-radius:14px; padding:12px 10px; text-align:center; border:1px solid rgba(30,35,64,.12); }}
+.flow .box b {{ display:block; font-size:12.5px; margin-bottom:5px; }}
+.flow .box span {{ font-size:11.5px; color:#4b5168; white-space:pre-line; }}
+.flow .arrow {{ align-self:center; color:#9aa1b4; font-size:18px; }}
 
-/* ---------- statistic blocks ---------- */
-.stat-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
-.stat-value { font-family: 'Source Serif 4', Georgia, serif; font-size: 2rem; font-weight: 600; color: var(--navy); margin: .2rem 0; }
-.stat-foot { font-size: .82rem; color: var(--muted); }
+/* ---------- Bank-card style (model cards) ---------- */
+.mcard {{ border:1px solid #eceef4; border-radius:16px; padding:18px 18px 14px; background:#fff; height:100%; position:relative; overflow:hidden; }}
+.mcard.active {{ border:2px solid {ORANGE}; }}
+.mcard .circles {{ display:flex; }}
+.mcard .c1, .mcard .c2 {{ width:24px; height:24px; border-radius:50%; }}
+.mcard .c1 {{ background:#ef4b4b; }} .mcard .c2 {{ background:#ffab2e; margin-left:-9px; opacity:.95; }}
+.mcard .num {{ font-size:19px; font-weight:600; margin:22px 0 22px; letter-spacing:.5px; }}
+.mcard .foot {{ display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; }}
+.mcard .foot small {{ display:block; color:#b6bccb; font-weight:400; font-size:10px; }}
+.mcard .check {{ position:absolute; right:16px; top:16px; width:20px; height:20px; border-radius:50%; background:{ORANGE}; color:#fff; font-size:12px; text-align:center; line-height:20px; }}
 
-/* ---------- formal tables ---------- */
-table.ftable { width: 100%; border-collapse: collapse; font-size: .88rem; margin: .2rem 0 .4rem; }
-table.ftable th {
-  text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--muted); font-weight: 600; padding: .55rem .7rem; border-bottom: 2px solid var(--navy);
-}
-table.ftable td { padding: .65rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.5; }
-table.ftable tr:last-child td { border-bottom: none; }
-table.ftable td:first-child { font-weight: 600; color: var(--navy); white-space: nowrap; }
+/* ---------- Buttons ---------- */
+.stButton > button, .stDownloadButton > button {{
+  background:linear-gradient(180deg,#ffa24c,{ORANGE}); color:#fff; border:none; border-radius:10px; font-weight:600;
+  padding:.45rem 1.2rem; box-shadow:0 8px 16px rgba(255,138,36,.28);
+}}
+.stButton > button:hover {{ color:#fff; filter:brightness(1.05); border:none; }}
+.stButton > button:focus:not(:active) {{ color:#fff; border:none; }}
 
-/* ---------- technique blocks ---------- */
-.tech-head { display: flex; align-items: baseline; gap: .8rem; margin-bottom: .3rem; }
-.tech-no { font-family: 'Source Serif 4', serif; font-size: 1.05rem; font-weight: 700; color: var(--accent); }
-.tech-name { font-family: 'Source Serif 4', serif; font-size: 1.15rem; font-weight: 600; color: var(--navy); }
-.chip {
-  display: inline-block; font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 600;
-  color: var(--accent); background: var(--tint); border: 1px solid #D5DEEA; border-radius: 3px; padding: .12rem .5rem; margin-left: auto;
-}
-.tech-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem 2rem; margin-top: .8rem; }
-.tech-grid .lbl { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: .15rem; }
-.tech-grid .wide { grid-column: 1 / -1; }
-.tech-grid .txt { font-size: .9rem; line-height: 1.55; }
-.evidence {
-  margin-top: 1rem; padding: .6rem .9rem; background: var(--tint); border-left: 3px solid var(--accent);
-  font-size: .86rem; color: var(--ink);
-}
-.evidence b { color: var(--navy); }
+/* ---------- Pills (1D 7D 1M ...) ---------- */
+.st-key-pills div[role="radiogroup"] {{ flex-direction:row; gap:4px; background:#f6f7fb; padding:4px; border-radius:12px; width:fit-content; }}
+.st-key-pills label {{ padding:4px 14px; border-radius:9px; margin:0; }}
+.st-key-pills label > div:first-child {{ display:none; }}
+.st-key-pills label p {{ font-size:13px; color:#8a90a2; }}
+.st-key-pills label:has(input:checked) {{ background:{ORANGE}; }}
+.st-key-pills label:has(input:checked) p {{ color:#fff; font-weight:600; }}
 
-/* ---------- lists ---------- */
-ul.plain { margin: .2rem 0 .2rem 1.1rem; padding: 0; }
-ul.plain li { margin-bottom: .45rem; font-size: .93rem; }
-
-/* ---------- sidebar ---------- */
-section[data-testid="stSidebar"] { background: #FFFFFF; border-right: 1px solid var(--line); }
-.brand { display: flex; align-items: center; gap: .7rem; padding: .3rem .2rem 1rem; }
-.brand .name { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.05rem; font-weight: 700; color: var(--navy); line-height: 1.2; }
-.brand .tag { font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: block; font-family: 'Inter', sans-serif; font-weight: 500; }
-.side-title {
-  font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
-  font-weight: 600; margin: 1.3rem 0 .4rem .2rem;
-}
-.side-link { display: block; padding: .35rem .2rem; font-size: .86rem; color: var(--accent) !important; text-decoration: none; }
-.side-link:hover { text-decoration: underline; }
-
-section[data-testid="stSidebar"] div[role="radiogroup"] { gap: 2px; }
-section[data-testid="stSidebar"] div[role="radiogroup"] > label {
-  width: 100%; padding: .5rem .75rem; border-radius: 3px; border-left: 3px solid transparent; margin: 0;
-}
-section[data-testid="stSidebar"] label[data-baseweb="radio"] > div:first-child { display: none; }
-section[data-testid="stSidebar"] div[role="radiogroup"] > label p { font-size: .9rem; color: #374151; }
-section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover { background: #F5F7FA; }
-section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
-  background: var(--tint); border-left-color: var(--navy);
-}
-section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) p { color: var(--navy); font-weight: 600; }
-
-/* ---------- segmented control (Data Flow metric) ---------- */
-.st-key-pills div[role="radiogroup"] { justify-content: flex-end; gap: 0; }
-.st-key-pills label[data-baseweb="radio"] { border: 1px solid var(--line); padding: .3rem .9rem; margin: 0; background: #fff; }
-.st-key-pills label[data-baseweb="radio"] > div:first-child { display: none; }
-.st-key-pills label[data-baseweb="radio"] p { font-size: .82rem; }
-.st-key-pills label:has(input:checked) { background: var(--navy); border-color: var(--navy); }
-.st-key-pills label:has(input:checked) p { color: #fff; }
-
-/* ---------- widgets ---------- */
-.stButton > button {
-  background: var(--navy); color: #fff; border: 1px solid var(--navy); border-radius: 3px;
-  padding: .45rem 1.2rem; font-weight: 500; letter-spacing: .02em;
-}
-.stButton > button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-.stButton > button:focus:not(:active) { color: #fff; border-color: var(--accent); }
-
-div[data-testid="stMetric"] {
-  background: #fff; border: 1px solid var(--line); border-radius: 4px; padding: .9rem 1.1rem;
-}
-div[data-testid="stMetricLabel"] p { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
-div[data-testid="stMetricValue"] { font-family: 'Source Serif 4', Georgia, serif; color: var(--navy); }
-div[data-testid="stAlert"] { border-radius: 3px; }
-div[data-testid="stExpander"] { border: 1px solid var(--line); border-radius: 3px; background: #fff; }
-
-.muted { color: var(--muted); font-size: .86rem; }
-.pos { color: #2E6F5E; font-weight: 600; }
-.neg { color: #9E3B3B; font-weight: 600; }
+/* tables / metrics */
+[data-testid="stDataFrame"] {{ border-radius:12px; overflow:hidden; }}
+[data-testid="stMetric"] {{ background:#fff8f1; border-radius:14px; padding:12px 16px; }}
 </style>
 """
+
+LOGO_SVG = """<svg width="38" height="38" viewBox="0 0 40 40"><polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#ef3e3e"/>
+<polygon points="20,9 30,15 30,25 20,31 10,25 10,15" fill="none" stroke="#fff" stroke-width="3"/></svg>"""
