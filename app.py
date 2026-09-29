@@ -230,13 +230,13 @@ BRAND = ('<div class="brand"><svg width="34" height="34" viewBox="0 0 40 40"><de
          '<stop offset="0" stop-color="#9134f7"/><stop offset="1" stop-color="#24d5e7"/></linearGradient></defs>'
          '<path d="M20 3 35 11.5v17L20 37 5 28.5v-17z" fill="url(#g)"/><path d="M20 12 28 16.5v7L20 28 12 23.5v-7z" fill="#fff" opacity=".92"/></svg>NetGuard</div>')
 with st.container(key="topbar"):
-    cols = st.columns([1.65, 1.05, 1.25, 1.7, 1.35, 1.25], gap="small", vertical_alignment="center")
-    cols[0].markdown(BRAND, unsafe_allow_html=True)
-    for c, (p, ic) in zip(cols[1:5], PAGES.items()):
+    st.markdown(BRAND, unsafe_allow_html=True)
+    cols = st.columns([1.0, 1.25, 1.65, 1.35, 1.3], gap="small", vertical_alignment="center")
+    for c, (p, ic) in zip(cols[:4], PAGES.items()):
         if c.button(p, icon=ic, key="nav_" + p, type="primary" if S.page == p else "secondary", use_container_width=True):
             S.page = p
             st.rerun()
-    with cols[5].popover("Settings", icon=":material/tune:", use_container_width=True):
+    with cols[4].popover("Settings", icon=":material/tune:", use_container_width=True):
         st.selectbox("Appearance", ["Dark", "Light"], key="appearance", help="Choose the app theme independently of your device theme.")
         thr = st.slider("Confidence threshold", 0.30, 0.90, 0.50, 0.05,
                         help="If the model is less confident than this, the connection is marked Needs review instead of being given an attack type.")
@@ -274,7 +274,7 @@ st.markdown("""<style>
 .st-key-topbar {border-radius:24px!important;padding:14px 22px!important;overflow:visible;}
 .st-key-topbar [data-testid="stHorizontalBlock"] {align-items:center!important;}
 .st-key-topbar [data-testid="column"] {min-width:0!important;display:flex;align-items:center;justify-content:center;}
-.st-key-topbar [data-testid="column"]:first-child {justify-content:flex-start;}
+.st-key-topbar [data-testid="column"]:first-child {justify-content:center;}
 .st-key-topbar [data-testid="column"] > div {width:100%;}
 .st-key-topbar .brand {display:flex;align-items:center;gap:9px;margin:0!important;white-space:nowrap;line-height:1;}
 .st-key-topbar .stButton,.st-key-topbar [data-testid="stPopover"] {width:100%;}
@@ -282,6 +282,13 @@ st.markdown("""<style>
 .st-key-topbar .stButton > button > div,.st-key-topbar [data-testid="stPopover"] button > div {display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:0!important;width:auto!important;}
 .st-key-topbar .stButton > button p,.st-key-topbar [data-testid="stPopover"] button p {margin:0!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;line-height:1.15!important;}
 .st-key-topbar .stButton > button svg,.st-key-topbar [data-testid="stPopover"] button svg {flex:none;width:18px;height:18px;}
+.st-key-topbar {width:100%!important;max-width:100%!important;box-sizing:border-box!important;}
+.st-key-topbar > div {max-width:100%!important;box-sizing:border-box!important;}
+.st-key-topbar > div > .brand,.st-key-topbar .brand {margin:0 0 12px!important;font-size:21px!important;}
+.st-key-topbar [data-testid="stHorizontalBlock"] {width:100%!important;max-width:100%!important;gap:8px!important;}
+.st-key-topbar [data-testid="column"] {flex-shrink:1!important;min-width:0!important;}
+.st-key-topbar .stButton > button,.st-key-topbar [data-testid="stPopover"] button {height:46px!important;min-height:46px!important;}
+@media(max-width:740px){.st-key-topbar {padding:12px!important}.st-key-topbar [data-testid="stHorizontalBlock"] {gap:3px!important}.st-key-topbar .stButton > button,.st-key-topbar [data-testid="stPopover"] button {font-size:10px!important;padding:.25rem .1rem!important;gap:2px!important}.st-key-topbar .stButton > button svg,.st-key-topbar [data-testid="stPopover"] button svg {display:none!important}}
 .service-icon svg {width:44px;height:44px;fill:none;stroke:#55d7ed;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 11px #43d5e766)}
 .service-card {height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 16px;}
 .service-card h3 {margin:9px 0 8px}.service-card p {min-height:42px;}
