@@ -10,14 +10,9 @@ traffic on the Prediction page.
 
 | Page | What it shows |
 |---|---|
-| Dashboard | Dataset overview, per-class counts, and a data-flow chart across pipeline steps |
-| Pipeline | The four cleaning steps, with row/feature counts before and after each one |
-| Data Quality | Profiling findings (missing values, duplicates, constant columns, skew, correlation) |
-| Feature Engineering | Every engineered feature, its formula, and the reasoning behind it |
-| Ablation Study | Same Random Forest evaluated on each pipeline stage, to isolate what each step contributes |
-| Models | Dummy baseline vs. Logistic Regression vs. Random Forest, same feature set |
-| Error Analysis | Confusion matrix, per-class report, and a breakdown of R2L/U2R errors by seen vs. unseen sub-type |
-| Prediction | Upload new traffic (with schema validation) or edit a single record, and see it scored end to end |
+| Upload & Data Quality | Dataset overview, per-class counts, and profiling findings (missing values, duplicates, constant columns, skew, correlation heatmap) |
+| Pipeline Explorer | The three cleaning steps with row/feature counts before and after each one, the engineered-feature table, and an ablation study that isolates what each step actually contributes |
+| Predict & Visualize | Upload new traffic (with schema validation) or edit a single record and score it end to end, plus confusion matrix, feature importance, and a baseline comparison against Dummy/Logistic Regression |
 
 ## Project structure
 
