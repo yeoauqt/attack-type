@@ -1,0 +1,124 @@
+/* ---------- Palette -----------------------------------------------------
+   Accent (orange)  : #F2894E
+   Normal            : #F2894E
+   DoS               : #4C6EF5
+   Probe             : #2BB673
+   R2L               : #E0417B
+   U2R               : #8B5CF6
+   Ink               : #232634
+   Muted             : #8A8FA3
+   Border            : #ECEAF3
+-------------------------------------------------------------------------- */
+
+html, body, [class*="css"] { font-family: "Inter", "Segoe UI", -apple-system, sans-serif; }
+
+#MainMenu, footer, [data-testid="stStatusWidget"] { visibility: hidden; height: 0; }
+header[data-testid="stHeader"] { background: transparent; height: 2.2rem; }
+
+.stApp {
+  background: linear-gradient(180deg, #FDF1EA 0%, #F8F3FC 22%, #FFFFFF 55%);
+}
+
+section[data-testid="stSidebar"] {
+  background: #FFFFFF;
+  border-right: 1px solid #ECEAF3;
+}
+section[data-testid="stSidebar"] > div { padding-top: 0.6rem; }
+
+/* logo */
+.ng-logo { display:flex; align-items:center; gap:10px; padding: 6px 10px 18px 10px; }
+.ng-logo-badge {
+  width:34px; height:34px; border-radius:10px;
+  background: linear-gradient(135deg, #F2894E, #E0417B);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-weight:700; font-size:15px;
+}
+.ng-logo-text { font-size:20px; font-weight:800; color:#232634; letter-spacing:-0.02em; }
+
+.ng-section-label {
+  font-size:11px; font-weight:700; letter-spacing:.08em; color:#B3B6C4;
+  padding: 14px 14px 4px 14px;
+}
+
+/* Streamlit's built-in page nav, restyled as a clean icon list */
+div[data-testid="stSidebarNav"] ul { padding: 0 8px; }
+div[data-testid="stSidebarNav"] li { list-style:none; margin: 2px 0; }
+div[data-testid="stSidebarNav"] a {
+  display:flex; align-items:center; gap:10px;
+  padding: 9px 12px; border-radius: 10px;
+  color:#4B4F5E; font-weight:500; font-size:14.5px;
+  text-decoration:none;
+}
+div[data-testid="stSidebarNav"] a:hover { background:#FBF6F3; }
+div[data-testid="stSidebarNav"] a[aria-current="page"] {
+  background:#FDECDF; color:#D8672B; font-weight:700;
+}
+div[data-testid="stSidebarNav"] a[aria-current="page"] span[data-testid="stIconMaterial"] { color:#D8672B; }
+div[data-testid="stSidebarNavSeparator"] { display:none; }
+
+/* Top bar */
+.ng-topbar {
+  display:flex; align-items:center; gap:16px;
+  background:#FFFFFF; border:1px solid #ECEAF3; border-radius:16px;
+  padding:10px 16px; margin-bottom:22px;
+  box-shadow: 0 1px 2px rgba(30,20,10,0.03);
+}
+.ng-search {
+  flex:1; display:flex; align-items:center; gap:8px;
+  background:#F7F6FA; border-radius:10px; padding:9px 14px;
+  color:#B3B6C4; font-size:14px;
+}
+.ng-topbar-icons { display:flex; align-items:center; gap:14px; color:#9A9EB0; }
+.ng-avatar {
+  width:34px; height:34px; border-radius:50%;
+  background:#F2894E; color:#fff; font-weight:700; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+}
+.ng-user-name { font-size:14px; font-weight:700; color:#232634; line-height:1.1; }
+.ng-user-sub { font-size:12px; color:#9A9EB0; }
+.ng-toggle {
+  width:38px; height:20px; border-radius:12px; background:#F1EFF6; position:relative;
+}
+.ng-toggle::after {
+  content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%;
+  background:#F2894E;
+}
+
+/* Cards */
+.ng-card {
+  background:#fff; border:1px solid #ECEAF3; border-radius:16px;
+  padding:18px 20px; height:100%;
+}
+.ng-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.ng-card-title { font-size:14px; font-weight:700; color:#4B4F5E; display:flex; align-items:center; gap:8px; }
+.ng-card-tag { font-size:12px; color:#B3B6C4; font-weight:600; }
+.ng-card-value { font-size:30px; font-weight:800; color:#232634; letter-spacing:-0.02em; }
+.ng-card-sub { font-size:12.5px; color:#9A9EB0; margin-top:2px; }
+.ng-card-foot { font-size:12.5px; color:#9A9EB0; margin-top:14px; }
+.ng-card-foot b { color:#232634; }
+
+.ng-dot { width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:6px; }
+.dot-normal{ background:#F2894E; } .dot-dos{ background:#4C6EF5; } .dot-probe{ background:#2BB673; }
+.dot-r2l{ background:#E0417B; } .dot-u2r{ background:#8B5CF6; }
+
+.ng-legend { font-size:12.5px; color:#6B6F80; margin-top:10px; }
+.ng-legend span { margin-right:14px; white-space:nowrap; }
+
+.ng-bar-track { height:8px; border-radius:6px; overflow:hidden; display:flex; margin: 10px 0 8px 0; background:#F1EFF6; }
+
+.ng-flag { color:#E0417B; font-weight:700; }
+.ng-ok { color:#2BB673; font-weight:700; }
+
+/* status badges for validation checks */
+.ng-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:12px; font-weight:700; }
+.badge-pass { background:#E4F6EC; color:#1E9E5A; }
+.badge-warn { background:#FDF1DC; color:#C8811A; }
+.badge-fail { background:#FCE7EC; color:#D8305A; }
+
+.ng-h1 { font-size:28px; font-weight:800; color:#232634; letter-spacing:-0.02em; margin-bottom:2px;}
+.ng-lede { color:#6B6F80; font-size:15px; max-width:920px; line-height:1.5; margin-bottom:20px; }
+
+hr.ng-sep { border:none; border-top:1px solid #ECEAF3; margin: 22px 0; }
+
+/* segmented control look for st.radio(horizontal) used as tabs-like switch */
+div[role="radiogroup"] { gap:4px; }
