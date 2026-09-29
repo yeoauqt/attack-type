@@ -1,49 +1,66 @@
-# 🛡️ NetGuard — NSL-KDD Data Engineering Dashboard
-โครงงานกระบวนวิชา **204426 (เทอม 1/69)** — Data Engineering Pipeline สำหรับข้อมูล Network Intrusion (NSL-KDD)
-แสดงผลด้วย **Streamlit** ในธีมแบบ dashboard (ส้ม-ขาว, sidebar เมนู, การ์ดมุมโค้ง)
+# NetGuard — NSL-KDD Intrusion Detection Dashboard
 
-## โครงสร้างโปรเจกต์
+A Streamlit dashboard built for course 204426 (Data Engineering group project). It classifies
+NSL-KDD network connections into **Normal / DoS / Probe / R2L / U2R** and, more importantly,
+makes the *data engineering* work itself visible: schema validation, deduplication, correlation
+filtering and feature engineering, all fitted on the training set only and re-applied to new
+traffic on the Prediction page.
+
+## Pages
+
+| Page | What it shows |
+|---|---|
+| Dashboard | Dataset overview, per-class counts, and a data-flow chart across pipeline steps |
+| Pipeline | The four cleaning steps, with row/feature counts before and after each one |
+| Data Quality | Profiling findings (missing values, duplicates, constant columns, skew, correlation) |
+| Feature Engineering | Every engineered feature, its formula, and the reasoning behind it |
+| Ablation Study | Same Random Forest evaluated on each pipeline stage, to isolate what each step contributes |
+| Models | Dummy baseline vs. Logistic Regression vs. Random Forest, same feature set |
+| Error Analysis | Confusion matrix, per-class report, and a breakdown of R2L/U2R errors by seen vs. unseen sub-type |
+| Prediction | Upload new traffic (with schema validation) or edit a single record, and see it scored end to end |
+
+## Project structure
+
 ```
-├── app.py            # Streamlit UI (8 หน้า)
-├── pipeline.py       # โค้ด Data Engineering / โมเดล (ย้ายมาจาก notebook)
-├── styles.py         # CSS ธีม
-├── requirements.txt
-├── .streamlit/config.toml
-├── data/             # (ไม่บังคับ) KDDTrain+.txt, KDDTest+.txt
-└── notebooks/attack_type_nslkdd_DE.ipynb
+netguard/
+├── app.py                 # entry point: theme, sidebar, page routing
+├── ui.py                   # shared chrome (topbar, cards, bundle loading)
+├── de_pipeline.py          # all data engineering + modelling logic (no Streamlit dependency)
+├── views/                  # one module per page
+├── assets/style.css        # theme
+├── data/                   # optional: put KDDTrain+.txt / KDDTest+.txt here
+├── .streamlit/config.toml  # color theme
+└── requirements.txt
 ```
 
-## หน้าในแอป ↔ หัวข้อรายงาน
-| หน้า | เนื้อหา | บทในเล่มรายงาน |
-|---|---|---|
-| Dashboard | ภาพรวม dataset, class, data flow, ผลโมเดล | บทที่ 1, 4 |
-| Pipeline | Diagram Input→Process→Output, step log, validation | บทที่ 2 |
-| Data Quality | Profiling, Quality Report, correlation, skew, unseen attack | บทที่ 2–3 |
-| Feature Eng. | ฟีเจอร์ที่สร้างเพิ่ม + เหตุผล | บทที่ 3 |
-| Ablation | เทียบทีละขั้นตอน DE (เลือกด้วย CV บน train) | บทที่ 3 |
-| Models | Dummy / LR / RF, report, confusion matrix, importance | บทที่ 3–4 |
-| Error Analysis | R2L/U2R แยก seen/unseen subtype | บทที่ 4 |
-| Predict | ทำนายทีละ connection จาก KDDTest+ | สาธิตโปรแกรม |
+If `data/KDDTrain+.txt` and `data/KDDTest+.txt` are not present and nothing is uploaded from the
+sidebar, the app downloads the standard NSL-KDD release from a public GitHub mirror
+(`defcom17/NSL_KDD`) at first run.
 
-## รันในเครื่อง
+## Run locally
+
 ```bash
-python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## ขึ้น GitHub + Deploy
-```bash
-git init
-git add .
-git commit -m "NSL-KDD DE dashboard"
-git branch -M main
-git remote add origin https://github.com/<username>/<repo>.git
-git push -u origin main
-```
-จากนั้นไปที่ https://share.streamlit.io → **New app** → เลือก repo, branch `main`, main file `app.py`
+## Deploy from GitHub (Streamlit Community Cloud)
 
-## หมายเหตุ
-- ทุกการตัดสินใจ (dedup, constant, correlation, top services) คำนวณจาก **train เท่านั้น** เพื่อกัน data leakage
-- Ablation/Models ใช้เวลารันหลายนาที (RF + CV) จึงมีปุ่ม **RUN** และ cache ผลไว้ — ลด `n_estimators` ใน Sidebar ถ้าต้องการให้เร็วขึ้น
-- อยากให้เปิดเร็วบน Cloud: commit ไฟล์ข้อมูลไว้ใน `data/` (train ~19 MB, test ~3 MB)
+1. Push this folder to a new GitHub repository.
+2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with GitHub, and click
+   **New app**.
+3. Pick the repository/branch and set **Main file path** to `app.py`.
+4. Deploy. The first load takes a little longer while the dataset downloads and the Random
+   Forests for the Ablation/Models/Error Analysis pages are fitted.
+
+## Notes for the write-up (บทที่ 3)
+
+`de_pipeline.py` is written so every technique used in the report maps to one function:
+
+- `read_nsl`, `validate_upload` → schema validation / extraction
+- `prepare` (dedup + constant-column removal) → data cleaning
+- `corr_drop_list` / `corr_pairs` → correlation-based feature selection (fit on train only)
+- `add_features` → feature engineering (ratios, log-transforms, service grouping)
+- `run_ablation` → ablation study proving which step actually helps
+- `error_tables` → seen-vs-unseen attack sub-type analysis for R2L/U2R
