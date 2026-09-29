@@ -108,7 +108,7 @@ table.xl td:first-child {background: #e6eefb !important; color: #64748b; text-al
 
 
 st.markdown("""<style>
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 .stApp, .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label, .stApp button, .stApp input, .stApp textarea, .stApp li, .stApp td, .stApp th,
 .kpi, .pt, .ps, .ch, .kv, .brand {font-family: "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;}
 header[data-testid="stHeader"], [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"] {display: none;}
@@ -354,8 +354,8 @@ table.xl tbody tr td:first-child {background:var(--app-idx)!important;color:var(
 [data-testid="stAlert"] *, [data-testid="stAlertContainer"] * {color:var(--app-text)!important;}
 [data-baseweb="select"] > div, [data-baseweb="input"], [data-baseweb="base-input"] {background:var(--app-input)!important;border-color:var(--app-border)!important;}
 [data-baseweb="select"] *, [data-baseweb="input"] input, [data-baseweb="base-input"] input, [data-testid="stNumberInput"] input
-  {color:var(--app-text)!important;-webkit-text-fill-color:var(--app-text)!important;}
-[data-testid="stNumberInput"] button {background:var(--app-input)!important;color:var(--app-text)!important;border-color:var(--app-border)!important;}
+  {color:var(--app-text)!important;-webkit-text-fill-color:var(--app-text)!important;opacity:1!important;}
+[data-testid="stNumberInputStepUp"], [data-testid="stNumberInputStepDown"] {background:var(--app-input)!important;color:var(--app-text)!important;border-color:var(--app-border)!important;}
 [data-baseweb="tag"] {background:var(--app-tagbg)!important;}
 [data-baseweb="tag"], [data-baseweb="tag"] * {color:var(--app-tagfg)!important;-webkit-text-fill-color:var(--app-tagfg)!important;}
 [data-baseweb="popover"] > div, [data-baseweb="menu"], ul[role="listbox"] {background:var(--app-surface)!important;border:1px solid var(--app-border);}
@@ -363,6 +363,31 @@ table.xl tbody tr td:first-child {background:var(--app-idx)!important;color:var(
 [data-baseweb="menu"] li, [data-baseweb="menu"] li *, [role="option"], [role="option"] * {color:var(--app-text)!important;}
 [role="option"]:hover, [role="option"][aria-selected="true"], [data-baseweb="menu"] li:hover {background:var(--app-tagbg)!important;}
 [data-testid="stTooltipContent"], [data-testid="stTooltipContent"] * {background:var(--app-surface)!important;color:var(--app-text)!important;}
+
+/* Upload box, help icons and the Settings popover */
+[data-testid="stFileUploader"] {background:transparent!important;border:0!important;}
+[data-testid="stFileUploaderDropzone"] button {background:var(--app-card)!important;border:1px solid var(--app-border)!important;border-radius:12px!important;}
+[data-testid="stTooltipIcon"] svg, [data-testid="stTooltipHoverTarget"] svg {color:var(--app-muted)!important;}
+input::placeholder, textarea::placeholder {color:var(--app-muted)!important;-webkit-text-fill-color:var(--app-muted)!important;opacity:1!important;}
+[data-testid="stPopoverBody"] {background:var(--app-surface)!important;border:1px solid var(--app-border)!important;}
+
+/* Typography: Space Grotesk for headings, IBM Plex Sans Thai for text (also covers Thai), JetBrains Mono for data */
+:root {--f-body:"IBM Plex Sans Thai","IBM Plex Sans","Segoe UI",system-ui,sans-serif;--f-head:"Space Grotesk","IBM Plex Sans Thai","Segoe UI",system-ui,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+.stApp {-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+.stApp, .stApp p, .stApp label, .stApp button, .stApp input, .stApp textarea, .stApp li, .stApp small,
+[data-baseweb="popover"], [data-baseweb="menu"] li, [role="option"], [data-testid="stTooltipContent"] {font-family:var(--f-body)!important;}
+.stApp p, .ps, .hero p, .section-intro p, .service-card p {line-height:1.65;}
+.hero h1, .section-intro h2, .service-card h3, .pt, .ch, .kv, .brand {font-family:var(--f-head)!important;}
+.hero h1 {font-weight:700!important;letter-spacing:-.03em;}
+.section-intro h2 {font-weight:700;letter-spacing:-.02em;}
+.service-card h3, .ch {font-weight:600;letter-spacing:-.005em;}
+.pt {font-weight:700;letter-spacing:-.025em;}
+.brand {font-weight:700;letter-spacing:-.02em;}
+.kv {font-weight:600;}
+.eyebrow {font-family:var(--f-mono)!important;font-weight:600;font-size:12px;letter-spacing:.22em;}
+.bv, .kl {font-family:var(--f-mono)!important;font-size:13px;}
+table.xl td {font-family:var(--f-mono)!important;font-size:12.5px;}
+table.xl th {font-weight:600;}
 </style>""", unsafe_allow_html=True)
 
 
