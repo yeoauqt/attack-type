@@ -1,61 +1,34 @@
-# NetGuard — NSL-KDD Intrusion Detection Dashboard
+# NSL-KDD Data Engineering Dashboard (Streamlit)
 
-A Streamlit dashboard built for course 204426 (Data Engineering group project). It classifies
-NSL-KDD network connections into **Normal / DoS / Probe / R2L / U2R** and, more importantly,
-makes the *data engineering* work itself visible: schema validation, deduplication, correlation
-filtering and feature engineering, all fitted on the training set only and re-applied to new
-traffic on the Prediction page.
+เว็บสาธิต Data Engineering Pipeline จาก `attack_type_nslkdd_DE.ipynb` (204426 เทอม 1/69)
 
-## Pages
-
-| Page | What it shows |
-|---|---|
-| Upload & Data Quality | Dataset overview, per-class counts, and profiling findings (missing values, duplicates, constant columns, skew, correlation heatmap) |
-| Pipeline Explorer | The three cleaning steps with row/feature counts before and after each one, the engineered-feature table, and an ablation study that isolates what each step actually contributes |
-| Predict & Visualize | Upload new traffic (with schema validation) or edit a single record and score it end to end, plus confusion matrix, feature importance, and a baseline comparison against Dummy/Logistic Regression |
-
-## Project structure
-
-```
-netguard/
-├── app.py                 # entry point: theme, sidebar, page routing
-├── ui.py                   # shared chrome (topbar, cards, bundle loading)
-├── de_pipeline.py          # all data engineering + modelling logic (no Streamlit dependency)
-├── views/                  # one module per page
-├── assets/style.css        # theme
-├── data/                   # optional: put KDDTrain+.txt / KDDTest+.txt here
-├── .streamlit/config.toml  # color theme
-└── requirements.txt
-```
-
-If `data/KDDTrain+.txt` and `data/KDDTest+.txt` are not present and nothing is uploaded from the
-sidebar, the app downloads the standard NSL-KDD release from a public GitHub mirror
-(`defcom17/NSL_KDD`) at first run.
-
-## Run locally
-
+## วิธีรัน
 ```bash
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
+- เปิดเว็บได้ทันที เพราะมีผลที่คำนวณไว้แล้วใน `artifacts/`
+- ถ้าลบ `artifacts/` เว็บจะรัน pipeline ใหม่เองครั้งแรก (~4-5 นาที) หรือรัน `python build_artifacts.py`
+- ถ้าลบ `data/` โค้ดจะโหลด NSL-KDD จาก GitHub ให้อัตโนมัติ (ต้องต่ออินเทอร์เน็ต)
 
-## Deploy from GitHub (Streamlit Community Cloud)
+## โครงสร้าง
+| ไฟล์ | หน้าที่ |
+|---|---|
+| `pipeline.py` | ฟังก์ชัน DE ทั้งหมดจากโน้ตบุ๊ก (extraction, validation, cleaning, feature selection/engineering, ablation, โมเดล) |
+| `app.py` | หน้าเว็บ 5 หน้า |
+| `build_artifacts.py` | คำนวณ ablation + เทรนโมเดล เก็บลง `artifacts/` |
+| `sample_upload.txt` | ไฟล์ตัวอย่างสำหรับทดสอบหน้า "ทำนายข้อมูลใหม่" (300 แถว) |
 
-1. Push this folder to a new GitHub repository.
-2. Go to [share.streamlit.io](https://share.streamlit.io), sign in with GitHub, and click
-   **New app**.
-3. Pick the repository/branch and set **Main file path** to `app.py`.
-4. Deploy. The first load takes a little longer while the dataset downloads and the Random
-   Forests for the Ablation/Models/Error Analysis pages are fitted.
+## หน้าเว็บ
+1. ภาพรวม Pipeline (diagram Input → Process → Output + ตารางเทคนิค/วัตถุประสงค์)
+2. Data Profiling & Quality Report
+3. Pipeline Explorer (step log, correlated pairs, heatmap, ก่อน–หลัง transform)
+4. Ablation & Model (เลือก setup ด้วย CV บน train, เทียบโมเดล, confusion matrix, error analysis)
+5. ทำนายข้อมูลใหม่ (validate → transform → predict → ดาวน์โหลดผล)
 
-## Notes for the write-up (บทที่ 3)
+## Deploy ขึ้น Streamlit Community Cloud
+1. push repo นี้ขึ้น GitHub (public)
+2. เข้า https://share.streamlit.io → New app → เลือก repo, branch `main`, Main file path = `app.py`
+3. กด Deploy (ครั้งแรกจะโหลดข้อมูล NSL-KDD จาก GitHub อัตโนมัติ)
 
-`de_pipeline.py` is written so every technique used in the report maps to one function:
-
-- `read_nsl`, `validate_upload` → schema validation / extraction
-- `prepare` (dedup + constant-column removal) → data cleaning
-- `corr_drop_list` / `corr_pairs` → correlation-based feature selection (fit on train only)
-- `add_features` → feature engineering (ratios, log-transforms, service grouping)
-- `run_ablation` → ablation study proving which step actually helps
-- `error_tables` → seen-vs-unseen attack sub-type analysis for R2L/U2R
+> ถ้าเวอร์ชัน scikit-learn บนเซิร์ฟเวอร์ไม่ตรงกับตอน build (1.8.0) เว็บจะรัน pipeline ใหม่เองครั้งแรก (~4-5 นาที)
