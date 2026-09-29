@@ -8,7 +8,16 @@ import streamlit as st
 
 from train_model import COLS
 
-st.set_page_config(page_title="NetGuard", layout="wide")
+APP_NAME = "NetGuard"  # change the site name here; it is used in the tab title and the top bar
+# One set of names and descriptions, shared by the top-bar buttons, the home cards and each page header.
+PAGE_INFO = {
+    "Detection": ("Threat Detection", "Classify a connection and see its severity, confidence, and suggested action."),
+    "Batch analysis": ("Batch Analysis", "Upload network logs and inspect all predicted results together."),
+    "Dashboard": ("Threat Dashboard", "Track detected threats, severity, and recent checks."),
+}
+_pg = st.session_state.get("page")
+st.set_page_config(page_title=f"{PAGE_INFO[_pg][0]} · {APP_NAME}" if _pg in PAGE_INFO else f"{APP_NAME} · Cyber Threat Monitoring",
+                   layout="wide")
 
 if not (os.path.exists("model.joblib") and os.path.exists("sample_test.csv")):
     with st.spinner("First run: preparing the model (about 1 minute)..."):
@@ -100,7 +109,7 @@ table.xl td:first-child {background: #e6eefb !important; color: #64748b; text-al
 
 st.markdown("""<style>
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
-.stApp, .stApp p, .stApp label, .stApp button, .stApp input, .stApp textarea, .stApp li, .stApp td, .stApp th,
+.stApp, .stApp h1, .stApp h2, .stApp h3, .stApp p, .stApp label, .stApp button, .stApp input, .stApp textarea, .stApp li, .stApp td, .stApp th,
 .kpi, .pt, .ps, .ch, .kv, .brand {font-family: "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;}
 header[data-testid="stHeader"], [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"] {display: none;}
 .block-container {padding-top: 1.6rem; max-width: 1180px;}
@@ -125,7 +134,6 @@ header[data-testid="stHeader"], [data-testid="stSidebar"], [data-testid="stSideb
 
 
 st.markdown("""<style>
-:root {color-scheme: dark;}
 .stApp, [data-testid="stAppViewContainer"] {background: radial-gradient(circle at 85% 3%, #17254a 0%, transparent 34%), radial-gradient(circle at 3% 68%, #211638 0%, transparent 36%), #0d0b1c; color: #f8f8ff;}
 .block-container {max-width: 1240px; padding-top: 1.4rem; padding-bottom: 5rem;}
 .st-key-topbar {background: #111123; border: 1px solid #263152; border-radius: 0; padding: 10px 22px; box-shadow: 0 0 26px #22d3ee15;}
@@ -162,16 +170,17 @@ def card(name):
     return st.container(key="card_" + name)
 
 
-ICONS = {
-    "Detection": '<path d="M12 3l8 3v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
-    "Batch analysis": '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6M12 11l-2.5 2.5M12 11l2.5 2.5"/>',
-    "Dashboard": '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+ARTWORK = {
+    "Detection": '<path d="M22 4 38 10v13c0 12-7 20-16 25C13 43 6 35 6 23V10z"/><path d="m15 25 5 5 10-12"/>',
+    "Batch analysis": '<path d="M4 14V9a3 3 0 0 1 3-3h12l5 6h18a3 3 0 0 1 3 3v4"/><path d="M7 18h36l-4 25H5L2 22a4 4 0 0 1 5-4z"/>',
+    "Dashboard": '<rect x="5" y="5" width="38" height="38" rx="4"/><path d="M13 34V23m9 11V13m9 21V20m9 14V11"/>',
 }
 
 
-def head(title, sub):
-    st.markdown(f'<div class="hd"><div class="hi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" '
-                f'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{ICONS[title]}</svg></div>'
+def head(page):
+    title, sub = PAGE_INFO[page]
+    st.markdown(f'<div class="hd"><div class="hi"><svg width="26" height="26" viewBox="0 0 48 48" fill="none" stroke="#fff" '
+                f'stroke-width="3" stroke-linecap="round" stroke-linejoin="round">{ARTWORK[page]}</svg></div>'
                 f'<div><div class="pt">{title}</div><div class="ps">{sub}</div></div></div>', unsafe_allow_html=True)
 
 
@@ -221,22 +230,22 @@ def log(res, source):
 
 
 # ---------- Top bar ----------
-PAGES = {"Home": ":material/home:", "Detection": ":material/shield:" , "Batch analysis": ":material/upload_file:", "Dashboard": ":material/space_dashboard:"}
+PAGES = {"Home": ":material/home:", "Detection": ":material/verified_user:", "Batch analysis": ":material/folder_open:", "Dashboard": ":material/bar_chart:"}
 if S.get("page") not in PAGES:
     S.page = "Home"
 S.setdefault("hist", pd.DataFrame(columns=["Time", "Source", "Protocol", "Service", "Result", "Confidence", "Severity"]))
 S.setdefault("added", set())
 BRAND = ('<div class="brand"><svg width="34" height="34" viewBox="0 0 40 40"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
          '<stop offset="0" stop-color="#9134f7"/><stop offset="1" stop-color="#24d5e7"/></linearGradient></defs>'
-         '<path d="M20 3 35 11.5v17L20 37 5 28.5v-17z" fill="url(#g)"/><path d="M20 12 28 16.5v7L20 28 12 23.5v-7z" fill="#fff" opacity=".92"/></svg>NetGuard</div>')
+         '<path d="M20 3 35 11.5v17L20 37 5 28.5v-17z" fill="url(#g)"/><path d="M20 12 28 16.5v7L20 28 12 23.5v-7z" fill="#fff" opacity=".92"/></svg>' + APP_NAME + '</div>')
 with st.container(key="topbar"):
-    st.markdown(BRAND, unsafe_allow_html=True)
-    cols = st.columns([1.0, 1.25, 1.65, 1.35, 1.3], gap="small", vertical_alignment="center")
-    for c, (p, ic) in zip(cols[:4], PAGES.items()):
-        if c.button(p, icon=ic, key="nav_" + p, type="primary" if S.page == p else "secondary", use_container_width=True):
+    cols = st.columns([1.5, 0.95, 1.6, 1.5, 1.6, 1.25], gap="small", vertical_alignment="center")
+    cols[0].markdown(BRAND, unsafe_allow_html=True)
+    for c, (p, ic) in zip(cols[1:5], PAGES.items()):
+        if c.button(PAGE_INFO[p][0] if p in PAGE_INFO else p, icon=ic, key="nav_" + p, type="primary" if S.page == p else "secondary", use_container_width=True):
             S.page = p
             st.rerun()
-    with cols[4].popover("Settings", icon=":material/tune:", use_container_width=True):
+    with cols[5].popover("Settings", icon=":material/tune:", use_container_width=True):
         st.selectbox("Appearance", ["Dark", "Light"], key="appearance", help="Choose the app theme independently of your device theme.")
         thr = st.slider("Confidence threshold", 0.30, 0.90, 0.50, 0.05,
                         help="If the model is less confident than this, the connection is marked Needs review instead of being given an attack type.")
@@ -252,7 +261,21 @@ palette = {
     "text": "#172342" if LIGHT else "#f7f8ff",
     "muted": "#4c5d79" if LIGHT else "#b9c4db",
     "input": "#f8faff" if LIGHT else "#1a2440",
+    "track": "#d3dff2" if LIGHT else "#11172b",
+    "accent": "#0e7490" if LIGHT else "#24d7d2",
+    "icon": "#0e7490" if LIGHT else "#55d7ed",
+    "glow": "#0891b224" if LIGHT else "#43d5e733",
+    "tagbg": "#dbeafe" if LIGHT else "#293759",
+    "tagfg": "#1e3a8a" if LIGHT else "#91e9fa",
+    "thbg": "#dbe7fb" if LIGHT else "#29395f",
+    "thfg": "#0f1f45" if LIGHT else "#ffffff",
+    "row1": "#ffffff" if LIGHT else "#141a31",
+    "row2": "#f1f6ff" if LIGHT else "#1a2441",
+    "idx": "#e6eefb" if LIGHT else "#1a2441",
+    "idxfg": "#4c5d79" if LIGHT else "#d0daef",
+    "tdborder": "#d0dcef" if LIGHT else "#35445f",
 }
+ROOT = ";".join(f"--app-{k}:{v}" for k, v in palette.items()) + ";color-scheme:" + ("light" if LIGHT else "dark")
 st.markdown("""<style>
 .stApp,[data-testid="stAppViewContainer"] {background:var(--app-bg)!important;color:var(--app-text)!important;}
 .st-key-topbar,[class*="st-key-card_"] {background:var(--app-surface)!important;border-color:var(--app-border)!important;}
@@ -274,7 +297,7 @@ st.markdown("""<style>
 .st-key-topbar {border-radius:24px!important;padding:14px 22px!important;overflow:visible;}
 .st-key-topbar [data-testid="stHorizontalBlock"] {align-items:center!important;}
 .st-key-topbar [data-testid="column"] {min-width:0!important;display:flex;align-items:center;justify-content:center;}
-.st-key-topbar [data-testid="column"]:first-child {justify-content:center;}
+.st-key-topbar [data-testid="column"]:first-child {justify-content:flex-start;}
 .st-key-topbar [data-testid="column"] > div {width:100%;}
 .st-key-topbar .brand {display:flex;align-items:center;gap:9px;margin:0!important;white-space:nowrap;line-height:1;}
 .st-key-topbar .stButton,.st-key-topbar [data-testid="stPopover"] {width:100%;}
@@ -282,20 +305,65 @@ st.markdown("""<style>
 .st-key-topbar .stButton > button > div,.st-key-topbar [data-testid="stPopover"] button > div {display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;min-width:0!important;width:auto!important;}
 .st-key-topbar .stButton > button p,.st-key-topbar [data-testid="stPopover"] button p {margin:0!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;line-height:1.15!important;}
 .st-key-topbar .stButton > button svg,.st-key-topbar [data-testid="stPopover"] button svg {flex:none;width:18px;height:18px;}
-.st-key-topbar {width:100%!important;max-width:100%!important;box-sizing:border-box!important;}
-.st-key-topbar > div {max-width:100%!important;box-sizing:border-box!important;}
-.st-key-topbar > div > .brand,.st-key-topbar .brand {margin:0 0 12px!important;font-size:21px!important;}
-.st-key-topbar [data-testid="stHorizontalBlock"] {width:100%!important;max-width:100%!important;gap:8px!important;}
-.st-key-topbar [data-testid="column"] {flex-shrink:1!important;min-width:0!important;}
-.st-key-topbar .stButton > button,.st-key-topbar [data-testid="stPopover"] button {height:46px!important;min-height:46px!important;}
-@media(max-width:740px){.st-key-topbar {padding:12px!important}.st-key-topbar [data-testid="stHorizontalBlock"] {gap:3px!important}.st-key-topbar .stButton > button,.st-key-topbar [data-testid="stPopover"] button {font-size:10px!important;padding:.25rem .1rem!important;gap:2px!important}.st-key-topbar .stButton > button svg,.st-key-topbar [data-testid="stPopover"] button svg {display:none!important}}
 .service-icon svg {width:44px;height:44px;fill:none;stroke:#55d7ed;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 11px #43d5e766)}
 .service-card {height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 16px;}
 .service-card h3 {margin:9px 0 8px}.service-card p {min-height:42px;}
 @media(max-width:900px){.block-container{padding-left:1rem;padding-right:1rem}.st-key-topbar .brand{font-size:17px}.st-key-topbar .brand svg{width:26px;height:26px}.st-key-topbar .stButton > button{font-size:11px!important;padding:.4rem .15rem!important}.st-key-topbar [data-testid="stPopover"] button{font-size:11px!important;padding:.4rem .15rem!important}}
-</style>""".replace("</style>", """
-:root {--app-bg:%s;--app-surface:%s;--app-card:%s;--app-border:%s;--app-text:%s;--app-muted:%s;--app-input:%s;}
-</style>""" % tuple(palette.values())), unsafe_allow_html=True)
+</style>""".replace("</style>", "\n:root {" + ROOT + "}\n</style>"), unsafe_allow_html=True)
+
+# Contrast fixes: every text/background pair below comes from the palette, so it stays readable in Dark and Light.
+st.markdown("""<style>
+.brow, .bl {color:var(--app-text)!important;}
+.bt {background:var(--app-track)!important;}
+.eyebrow {color:var(--app-accent)!important;}
+.pill:not(.hot) {background:var(--app-tagbg)!important;color:var(--app-tagfg)!important;}
+.pill.hot {background:linear-gradient(105deg,#7a2bea,#1f7ae0)!important;color:#fff!important;}
+.stButton > button[kind="primary"], .stButton > button[data-testid="stBaseButton-primary"] {background:linear-gradient(105deg,#7f2df0,#2f86e8)!important;}
+
+table.xl th {background:var(--app-thbg)!important;color:var(--app-thfg)!important;border-color:var(--app-tdborder)!important;}
+table.xl td {color:var(--app-text)!important;border-color:var(--app-tdborder)!important;}
+table.xl tbody tr:nth-child(odd) td {background:var(--app-row1)!important;}
+table.xl tbody tr:nth-child(even) td {background:var(--app-row2)!important;}
+table.xl tbody tr td:first-child {background:var(--app-idx)!important;color:var(--app-idxfg)!important;}
+
+/* Home cards: no filter (it drew a square box behind the first icon); glow comes from a soft gradient instead */
+.service-icon {filter:none!important;width:68px;height:68px;margin-bottom:6px;display:grid;place-items:center;border-radius:50%;
+  background:radial-gradient(circle,var(--app-glow) 0,transparent 70%);}
+.service-icon svg {width:44px;height:44px;stroke:var(--app-icon)!important;filter:none!important;}
+.service-card {height:210px;}
+[data-testid="stHeaderActionElements"], .section-intro h2 a, .service-card h3 a, .hero h1 a {display:none!important;}
+
+/* Top bar: keep the site name on the same line as the buttons */
+.st-key-topbar [data-testid="stHorizontalBlock"] {align-items:center!important;flex-wrap:nowrap!important;}
+.st-key-topbar [data-testid="stColumn"], .st-key-topbar [data-testid="column"] {min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important;}
+.st-key-topbar [data-testid="stColumn"]:first-child, .st-key-topbar [data-testid="column"]:first-child {justify-content:flex-start!important;}
+.st-key-topbar [data-testid="stColumn"] > div, .st-key-topbar [data-testid="column"] > div {width:100%;}
+.st-key-topbar [data-testid="stElementContainer"], .st-key-topbar [data-testid="stMarkdown"], .st-key-topbar [data-testid="stMarkdownContainer"] {margin:0!important;padding:0!important;}
+.st-key-topbar .brand {min-height:48px;margin:0!important;padding:0!important;}
+
+/* Streamlit's own widgets */
+[data-testid="stCheckbox"] label, [data-testid="stCheckbox"] label * {color:var(--app-text)!important;}
+[data-testid="stExpander"] details, [data-testid="stExpander"] summary {background:var(--app-surface)!important;border-color:var(--app-border)!important;}
+[data-testid="stExpander"] summary, [data-testid="stExpander"] summary * {color:var(--app-text)!important;}
+[data-testid="stSlider"] [data-testid="stTickBarMin"], [data-testid="stSlider"] [data-testid="stTickBarMax"] {color:var(--app-muted)!important;}
+[data-testid="stSliderThumbValue"] {color:var(--app-text)!important;}
+[data-testid="stFileUploaderDropzone"] {background:var(--app-input)!important;border:1px dashed var(--app-border)!important;}
+[data-testid="stFileUploaderDropzone"] *, [data-testid="stFileUploaderFile"] * {color:var(--app-muted)!important;}
+[data-testid="stFileUploaderDropzone"] button, [data-testid="stFileUploaderDropzone"] button * {color:var(--app-text)!important;}
+[data-testid="stAlert"], [data-testid="stAlertContainer"] {background:var(--app-input)!important;border:1px solid var(--app-border)!important;border-radius:12px;}
+[data-testid="stAlert"] *, [data-testid="stAlertContainer"] * {color:var(--app-text)!important;}
+[data-baseweb="select"] > div, [data-baseweb="input"], [data-baseweb="base-input"] {background:var(--app-input)!important;border-color:var(--app-border)!important;}
+[data-baseweb="select"] *, [data-baseweb="input"] input, [data-baseweb="base-input"] input, [data-testid="stNumberInput"] input
+  {color:var(--app-text)!important;-webkit-text-fill-color:var(--app-text)!important;}
+[data-testid="stNumberInput"] button {background:var(--app-input)!important;color:var(--app-text)!important;border-color:var(--app-border)!important;}
+[data-baseweb="tag"] {background:var(--app-tagbg)!important;}
+[data-baseweb="tag"], [data-baseweb="tag"] * {color:var(--app-tagfg)!important;-webkit-text-fill-color:var(--app-tagfg)!important;}
+[data-baseweb="popover"] > div, [data-baseweb="menu"], ul[role="listbox"] {background:var(--app-surface)!important;border:1px solid var(--app-border);}
+[data-baseweb="menu"] li, ul[role="listbox"] li, [role="option"] {background:transparent!important;}
+[data-baseweb="menu"] li, [data-baseweb="menu"] li *, [role="option"], [role="option"] * {color:var(--app-text)!important;}
+[role="option"]:hover, [role="option"][aria-selected="true"], [data-baseweb="menu"] li:hover {background:var(--app-tagbg)!important;}
+[data-testid="stTooltipContent"], [data-testid="stTooltipContent"] * {background:var(--app-surface)!important;color:var(--app-text)!important;}
+</style>""", unsafe_allow_html=True)
 
 
 # ---------- Home ----------
@@ -312,19 +380,10 @@ def page_home():
         S.page = "Dashboard"
         st.rerun()
     st.markdown('''<div class="section-intro"><div class="eyebrow">OUR TOOLS</div><h2>Manage Security Services</h2><p>Check a connection, analyse a CSV file, and review results from this session.</p></div>''', unsafe_allow_html=True)
-    services = [
-        ("shield", "Threat Detection", "Classify a connection and see its severity, confidence, and suggested action.", "Detection"),
-        ("folder", "Batch Analysis", "Upload network logs and inspect all predicted results together.", "Batch analysis"),
-        ("chart", "Threat Dashboard", "Track detected threats, severity, and recent checks.", "Dashboard"),
-    ]
-    artwork = {
-        "shield": '<path d="M22 4 38 10v13c0 12-7 20-16 25C13 43 6 35 6 23V10z"/><path d="m15 25 5 5 10-12"/>',
-        "folder": '<path d="M4 14V9a3 3 0 0 1 3-3h12l5 6h18a3 3 0 0 1 3 3v4"/><path d="M7 18h36l-4 25H5L2 22a4 4 0 0 1 5-4z"/>',
-        "chart": '<rect x="5" y="5" width="38" height="38" rx="4"/><path d="M13 34V23m9 11V13m9 21V20m9 14V11"/>',
-    }
-    for col, (icon, title, desc, page) in zip(st.columns(3, gap="medium"), services):
+    for col, page in zip(st.columns(3, gap="medium"), PAGE_INFO):
+        title, desc = PAGE_INFO[page]
         with col:
-            st.markdown(f'<div class="service-card"><div class="service-icon"><svg viewBox="0 0 48 48" aria-hidden="true">{artwork[icon]}</svg></div><h3>{title}</h3><p>{desc}</p></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="service-card"><div class="service-icon"><svg viewBox="0 0 48 48" aria-hidden="true">{ARTWORK[page]}</svg></div><h3>{title}</h3><p>{desc}</p></div>', unsafe_allow_html=True)
             if st.button("Open " + title + " →", key="home_" + page, use_container_width=True):
                 S.page = page
                 st.rerun()
@@ -393,7 +452,7 @@ def result(row, out, pr):
 
 
 def page_check():
-    head("Detection", "Enter the details of one network connection, for example from a firewall or server log, and the model will tell you whether it looks like an attack.")
+    head("Detection")
     for f in FIELDS:
         S.setdefault("f_" + f, conv(f, B["defaults"][f]))
     with st.expander("Start from an example"):
@@ -466,7 +525,7 @@ def read_upload(f):
 
 
 def page_file():
-    head("Batch analysis", "Upload a CSV file of connection records and check all of them at once.")
+    head("Batch analysis")
     with card("upload"):
         c1, c2 = st.columns([3, 2])
         up = c1.file_uploader("CSV file", type="csv")
@@ -525,7 +584,7 @@ def page_file():
 
 # ---------- Summary ----------
 def page_summary():
-    head("Dashboard", "A summary of every connection you have checked in this session, entered by hand or uploaded as a file.")
+    head("Dashboard")
     h = S.hist
     if h.empty:
         with card("empty"):
