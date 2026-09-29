@@ -1,9 +1,12 @@
 import datetime as dt
+import io
 import os
 
 import joblib
 import pandas as pd
 import streamlit as st
+
+from train_model import COLS
 
 st.set_page_config(page_title="NetGuard", layout="wide")
 
@@ -305,6 +308,31 @@ def validate(df):
     return X.fillna(B["defaults"])[RAW], checks
 
 
+def read_upload(f):
+    """Read a CSV that may have a header row, no header row, or every line wrapped in quotes."""
+    lines = []
+    for ln in f.getvalue().decode("utf-8", errors="ignore").splitlines():
+        ln = ln.strip()
+        if ln.startswith('"') and ln.endswith('"') and '"' not in ln[1:-1]:
+            ln = ln[1:-1]
+        if ln:
+            lines.append(ln)
+    text = "\n".join(lines)
+    df = pd.read_csv(io.StringIO(text))
+    if any(c in df.columns for c in RAW):
+        return df, None
+    df = pd.read_csv(io.StringIO(text), header=None)
+    if df.shape[1] not in (41, 42, 43):
+        raise ValueError(f"expected 41 to 43 columns but found {df.shape[1]}")
+    df.columns = COLS[:df.shape[1]]
+    return df, "No header row was found, so the standard column order was assumed."
+
+
+@st.cache_data(show_spinner="Analysing connections...")
+def predict_cached(df, thr):
+    return predict(df, thr)[0]
+
+
 def page_batch():
     head("Batch analysis", "Upload a CSV file of connection records and check all of them at once.")
     with card("upload"):
@@ -316,10 +344,12 @@ def page_batch():
         data = SAMPLE[RAW].head(500)
     elif up is not None:
         try:
-            data = pd.read_csv(up)
+            data, note = read_upload(up)
         except Exception as e:
             st.error(f"The file could not be read: {e}")
             return
+        if note:
+            st.info(note)
     else:
         st.info("Upload a CSV file, or tick the sample option, to begin.")
         return
@@ -330,7 +360,7 @@ def page_batch():
     if clean is None:
         st.error("Too many required columns are missing. Download the expected format and match its column names.")
         return
-    out, _ = predict(clean, thr)
+    out = predict_cached(clean, thr)
     res = pd.concat([clean, out], axis=1)
     k = st.columns(4)
     kpi(k[0], "Connections checked", f"{len(res):,}")
