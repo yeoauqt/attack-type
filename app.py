@@ -98,13 +98,48 @@ table.xl td:first-child {background: #e6eefb !important; color: #64748b; text-al
 </style>""", unsafe_allow_html=True)
 
 
+st.markdown("""<style>
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+.stApp, .stApp p, .stApp label, .stApp button, .stApp input, .stApp textarea, .stApp li, .stApp td, .stApp th,
+.kpi, .pt, .ps, .ch, .kv, .brand {font-family: "Plus Jakarta Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;}
+header[data-testid="stHeader"], [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"] {display: none;}
+.block-container {padding-top: 1.6rem; max-width: 1180px;}
+.st-key-topbar {background: #fff; border: 1px solid #e0e9f8; border-radius: 22px; padding: 10px 18px;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, .07); margin-bottom: 30px;}
+.st-key-topbar .brand {margin: 0; font-size: 22px;}
+.st-key-topbar .stButton > button, .st-key-topbar [data-testid="stPopover"] button {border-radius: 14px; border: 0; background: transparent;
+  color: #3b5583; font-weight: 600; padding: .55rem 1rem; box-shadow: none;}
+.st-key-topbar .stButton > button p {color: inherit;}
+.st-key-topbar .stButton > button[kind="primary"], .st-key-topbar .stButton > button[data-testid="stBaseButton-primary"] {
+  background: linear-gradient(135deg, #2563eb, #38bdf8); color: #fff; box-shadow: 0 8px 18px rgba(37, 99, 235, .32);}
+.st-key-topbar [data-testid="stPopover"] button {border: 1px solid #d6e2f6; background: #f5f9ff; color: #1e40af;}
+.hd {display: flex; align-items: center; gap: 16px; margin: 0 0 26px;}
+.hi {flex: none; width: 54px; height: 54px; border-radius: 17px; background: linear-gradient(135deg, #2563eb, #38bdf8);
+  display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 22px rgba(37, 99, 235, .28);}
+.pt {font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 0;}
+.ps {font-size: 15px; line-height: 1.5; color: #52637f; margin: 4px 0 0; max-width: 720px;}
+.ch {display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: #0b1e4f; margin-bottom: 10px;}
+.ch::before {content: ''; width: 4px; height: 16px; border-radius: 3px; background: linear-gradient(180deg, #2563eb, #38bdf8);}
+.kv {font-variant-numeric: tabular-nums;}
+</style>""", unsafe_allow_html=True)
+
+
 # ---------- Helpers ----------
 def card(name):
     return st.container(key="card_" + name)
 
 
+ICONS = {
+    "Detection": '<path d="M12 3l8 3v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+    "Batch analysis": '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6M12 11l-2.5 2.5M12 11l2.5 2.5"/>',
+    "Dashboard": '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+}
+
+
 def head(title, sub):
-    st.markdown(f'<div class="pt">{title}</div><div class="ps">{sub}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="hd"><div class="hi"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" '
+                f'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{ICONS[title]}</svg></div>'
+                f'<div><div class="pt">{title}</div><div class="ps">{sub}</div></div></div>', unsafe_allow_html=True)
 
 
 def kpi(col, label, value):
@@ -152,23 +187,23 @@ def log(res, source):
     S.hist = pd.concat([S.hist, d], ignore_index=True)
 
 
-# ---------- Sidebar ----------
-PAGES = {"Check connection": ":material/shield:", "Check file": ":material/upload_file:", "Summary": ":material/space_dashboard:"}
+# ---------- Top bar ----------
+PAGES = {"Detection": ":material/shield:", "Batch analysis": ":material/upload_file:", "Dashboard": ":material/space_dashboard:"}
 if S.get("page") not in PAGES:
-    S.page = "Check connection"
+    S.page = "Detection"
 S.setdefault("hist", pd.DataFrame(columns=["Time", "Source", "Protocol", "Service", "Result", "Confidence", "Severity"]))
 S.setdefault("added", set())
-with st.sidebar:
-    st.markdown('<div class="brand"><svg width="38" height="38" viewBox="0 0 40 40"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
-                '<stop offset="0" stop-color="#1d4ed8"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>'
-                '<path d="M20 3 35 11.5v17L20 37 5 28.5v-17z" fill="url(#g)"/><path d="M20 12 28 16.5v7L20 28 12 23.5v-7z" fill="#fff" opacity=".92"/></svg>NetGuard</div>'
-                '<div class="cap">Pages</div>', unsafe_allow_html=True)
-    for p, ic in PAGES.items():
-        if st.button(p, icon=ic, key="nav_" + p, type="primary" if S.page == p else "secondary", use_container_width=True):
+BRAND = ('<div class="brand"><svg width="34" height="34" viewBox="0 0 40 40"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+         '<stop offset="0" stop-color="#1d4ed8"/><stop offset="1" stop-color="#38bdf8"/></linearGradient></defs>'
+         '<path d="M20 3 35 11.5v17L20 37 5 28.5v-17z" fill="url(#g)"/><path d="M20 12 28 16.5v7L20 28 12 23.5v-7z" fill="#fff" opacity=".92"/></svg>NetGuard</div>')
+with st.container(key="topbar"):
+    cols = st.columns([2.2, 1.4, 1.8, 1.5, 2.0, 1.4], vertical_alignment="center")
+    cols[0].markdown(BRAND, unsafe_allow_html=True)
+    for c, (p, ic) in zip(cols[1:4], PAGES.items()):
+        if c.button(p, icon=ic, key="nav_" + p, type="primary" if S.page == p else "secondary", use_container_width=True):
             S.page = p
             st.rerun()
-    st.markdown('<div class="cap">Settings</div>', unsafe_allow_html=True)
-    with st.expander("Detection settings"):
+    with cols[5].popover("Settings", icon=":material/tune:", use_container_width=True):
         thr = st.slider("Confidence threshold", 0.30, 0.90, 0.50, 0.05,
                         help="If the model is less confident than this, the connection is marked Needs review instead of being given an attack type.")
 
@@ -235,7 +270,7 @@ def result(row, out, pr):
 
 
 def page_check():
-    head("Check connection", "Enter what you know about one connection to see whether it looks like an attack.")
+    head("Detection", "Enter the details of one network connection, for example from a firewall or server log, and the model will tell you whether it looks like an attack.")
     for f in FIELDS:
         S.setdefault("f_" + f, conv(f, B["defaults"][f]))
     with st.expander("Start from an example"):
@@ -252,7 +287,7 @@ def page_check():
             with b:
                 field(pair[1])
         st.caption("Anything not listed here is filled in with typical values, or taken from the example you loaded.")
-        if st.button("Check connection", type="primary", use_container_width=True):
+        if st.button("Analyse connection", type="primary", use_container_width=True):
             base = S.get("hidden", B["defaults"])
             row = pd.DataFrame([{**base, **{f: (S["f_" + f] / 100 if f in PCT else S["f_" + f]) for f in FIELDS}}])
             out, pr = predict(row, thr)
@@ -263,7 +298,7 @@ def page_check():
             result(*S.last)
         else:
             with card("result"):
-                st.markdown('<div class="ch">Result</div>Fill in the details and select Check connection. The result appears here.',
+                st.markdown('<div class="ch">Result</div>Fill in the details and select Analyse connection. The result appears here.',
                             unsafe_allow_html=True)
 
 
@@ -308,7 +343,7 @@ def read_upload(f):
 
 
 def page_file():
-    head("Check file", "Upload a CSV of connection records to check them all at once.")
+    head("Batch analysis", "Upload a CSV file of connection records and check all of them at once.")
     with card("upload"):
         c1, c2 = st.columns([3, 2])
         up = c1.file_uploader("CSV file", type="csv")
@@ -367,14 +402,14 @@ def page_file():
 
 # ---------- Summary ----------
 def page_summary():
-    head("Summary", "Everything you have checked in this session, one by one or from files.")
+    head("Dashboard", "A summary of every connection you have checked in this session, entered by hand or uploaded as a file.")
     h = S.hist
     if h.empty:
         with card("empty"):
             st.markdown('<div class="ch">Nothing checked yet</div>Check a connection or upload a file, and the results will be summarised here.',
                         unsafe_allow_html=True)
             if st.button("Check a connection", type="primary"):
-                S.page = "Check connection"
+                S.page = "Detection"
                 st.rerun()
         return
     threats = h[h["Result"] != "Normal"]
@@ -394,7 +429,7 @@ def page_summary():
         sv = h["Severity"].value_counts().reindex(RANK[::-1], fill_value=0)
         bars([(s, n / len(h), f"{n:,}") for s, n in sv.items()])
     with card("recent"):
-        st.markdown('<div class="ch">Latest checks</div>', unsafe_allow_html=True)
+        st.markdown('<div class="ch">Recent checks</div>', unsafe_allow_html=True)
         t = h.tail(12).iloc[::-1].reset_index(drop=True)
         xl(t.assign(Result=t["Result"].map(LBL)))
         if st.button("Clear history"):
@@ -402,4 +437,4 @@ def page_summary():
             st.rerun()
 
 
-{"Check connection": page_check, "Check file": page_file, "Summary": page_summary}[S.page]()
+{"Detection": page_check, "Batch analysis": page_file, "Dashboard": page_summary}[S.page]()
